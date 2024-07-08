@@ -2,11 +2,11 @@
   <div class="main-container">
     <div class="cards">
       <demo-menu-card
-        v-for="({ name, text, path }, index) in routes"
-        :key="index"
-        :name="name"
-        :text="text"
-        :link="path"/>
+          v-for="({ name, text, path }, index) in routes"
+          :key="index"
+          :name="name"
+          :text="text"
+          :link="path"/>
     </div>
   </div>
 </template>
