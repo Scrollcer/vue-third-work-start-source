@@ -103,8 +103,8 @@
 <script setup>
 import { useRoute, useRouter } from "vue-router";
 import { ref, onMounted, computed } from "vue";
-import { useTaskCardDate } from "../common/composables";
-import { getReadableDate, getImage } from "../common/helpers";
+import { useTaskCardDate } from "@/common/composables";
+import { getReadableDate, getImage } from "@/common/helpers";
 import TaskCardViewTicksList from "../modules/tasks/components/TaskCardViewTicksList.vue";
 import TaskCardTags from "../modules/tasks/components/TaskCardTags.vue";
 import TaskCardViewComments from "../modules/tasks/components/TaskCardViewComments.vue";
@@ -157,7 +157,7 @@ onMounted(() => {
   padding-bottom: 50px;
 
   outline: none;
-  background: $ gray-900;
+  background: $gray-900;
 
   & __close {
     position: absolute;
@@ -182,9 +182,9 @@ onMounted(() => {
       height: 1px;
 
       content: "";
-      transition: background-color $ animationSpeed;
+      transition: background-color $animationSpeed;
 
-      background-color: $ blue-gray-300;
+      background-color: $blue-gray-300;
     }
 
     & ::after {
@@ -198,13 +198,13 @@ onMounted(() => {
     & :hover {
       & ::before,
       & ::after {
-        background-color: $ blue-700;
+        background-color: $blue-700;
       }
     }
   }
 
   & __error-text {
-    color: $ red-600;
+    color: $red-600;
 
     @include r-s10-h12;
   }
@@ -218,8 +218,8 @@ onMounted(() => {
     margin: 0 auto;
     padding: 40px;
 
-    background-color: $ white-900;
-    box-shadow: 0 4px 8px $ shadow-500;
+    background-color: $white-900;
+    box-shadow: 0 4px 8px $shadow-500;
   }
 
   & __block {
@@ -233,7 +233,7 @@ onMounted(() => {
     margin: 0;
     padding: 0;
 
-    color: $ gray-900;
+    color: $gray-900;
     border: none;
     border-bottom: 1px solid transparent;
     border-radius: 0;
@@ -244,7 +244,7 @@ onMounted(() => {
     & :focus:not(:disabled) {
       cursor: text;
 
-      border-color: $ blue-gray-200;
+      border-color: $blue-gray-200;
     }
 
     & --disabled {
@@ -265,7 +265,7 @@ onMounted(() => {
   & __date {
     margin-top: 5px;
 
-    color: $ blue-gray-300;
+    color: $blue-gray-300;
 
     @include r-s14-h21;
   }
@@ -307,14 +307,14 @@ onMounted(() => {
 
   & __user {
     & :active {
-      color: $ blue-gray-300;
+      color: $blue-gray-300;
     }
   }
 
   & __date-link {
     text-decoration: none;
 
-    color: $ gray-900;
+    color: $gray-900;
 
     @include r-s16-h21;
   }
@@ -322,7 +322,7 @@ onMounted(() => {
   & __params {
     position: relative;
 
-    color: $ gray-900;
+    color: $gray-900;
 
     @include clear-list;
     @include r-s16-h21;
@@ -345,7 +345,7 @@ onMounted(() => {
     cursor: pointer;
     text-decoration: underline;
 
-    color: $ blue-gray-600;
+    color: $blue-gray-600;
     border: none;
     background-color: transparent;
 
@@ -360,7 +360,7 @@ onMounted(() => {
       height: 14px;
 
       content: "";
-      transition: opacity $ animationSpeed;
+      transition: opacity $animationSpeed;
 
       opacity: 0;
       background-image: url("~@/assets/img/icon-pencil.svg");
@@ -379,12 +379,12 @@ onMounted(() => {
   & __links-item {
     margin-top: 16px;
 
-    color: $ blue-gray-300;
+    color: $blue-gray-300;
 
     @include r-s14-h21;
 
     a {
-      color: $ blue-600;
+      color: $blue-600;
     }
 
     input {
@@ -393,7 +393,7 @@ onMounted(() => {
       width: 100%;
       margin-bottom: 10px;
 
-      color: $ blue-gray-600;
+      color: $blue-gray-600;
       border: 0;
       outline: 0;
 
@@ -408,7 +408,7 @@ onMounted(() => {
   :deep(&__title) {
     margin: 0;
 
-    color: $ gray-900;
+    color: $gray-900;
 
     @include m-s18-h21;
   }
@@ -417,7 +417,7 @@ onMounted(() => {
     p {
       margin-top: 16px;
 
-      color: $ blue-gray-600;
+      color: $blue-gray-600;
 
       @include r-s14-h21;
     }
@@ -433,8 +433,8 @@ onMounted(() => {
 
       resize: none;
 
-      color: $ blue-gray-600;
-      border: 1px solid $ gray-100;
+      color: $blue-gray-600;
+      border: 1px solid $gray-100;
       border-radius: 6px;
       outline: none;
 
@@ -468,7 +468,7 @@ onMounted(() => {
   }
 
   :deep(&__icons) {
-    transition: opacity $ animationSpeed;
+    transition: opacity $animationSpeed;
 
     opacity: 0;
   }
@@ -504,10 +504,10 @@ onMounted(() => {
     padding: 0;
 
     cursor: pointer;
-    transition: opacity $ animationSpeed;
+    transition: opacity $animationSpeed;
 
     opacity: 0.5;
-    color: $ blue-gray-600;
+    color: $blue-gray-600;
     border: none;
     outline: none;
     background-color: transparent;
@@ -523,7 +523,7 @@ onMounted(() => {
 
       margin-top: 0;
 
-      color: $ red-500;
+      color: $red-500;
     }
   }
 }

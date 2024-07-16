@@ -18,7 +18,7 @@
 <script setup>
 import CounterButton from "./CounterButton.vue";
 import CounterValue from "./CounterValue.vue";
-import DemoContainer from "../src/components/DemoContainer.vue";
+import DemoContainer from "../components/DemoContainer.vue";
 import { useCounterStore } from "./store";
 import { ref } from "vue";
 
