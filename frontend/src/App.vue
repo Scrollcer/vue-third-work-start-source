@@ -21,3 +21,7 @@ void usersStore.fetchUsers();
 // Загружаем колонки
 void columnsStore.fetchColumns();
 </script>
+
+<style lang="scss">
+@import "@/assets/scss/app.scss";
+</style>

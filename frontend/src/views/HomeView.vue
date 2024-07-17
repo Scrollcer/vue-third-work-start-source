@@ -1,8 +1,8 @@
 <template>
   <main class="content">
-    <!--      Отображение дочерних маршрутов-->
-    <router-view />
     <section class="desk">
+      <!--      Отображение дочерних маршрутов-->
+      <router-view />
       <!--      Шапка доски-->
       <div class="desk__header">
         <h1 class="desk__title">Design Coffee Lab</h1>
@@ -30,7 +30,7 @@
               >
                 <a class="user-filter__button">
                   <img
-                    :src="getImage(user.avatar)"
+                    :src="getPublicImage(user.avatar)"
                     alt="Аватар юзера"
                     width="24"
                     height="24"
@@ -66,7 +66,6 @@
         </div>
       </div>
       <!--      Колонки и задачи-->
-      <!--      Колонки и задачи-->
       <div v-if="columnsStore.columns.length" class="desk__columns">
         <!--        Показываем колонки-->
         <desk-column
@@ -86,7 +85,7 @@
 <script setup>
 import { STATUSES } from "../common/constants";
 import DeskColumn from "@/modules/columns/components/DeskColumn.vue";
-import { getImage } from "../common/helpers";
+import { getPublicImage } from "../common/helpers";
 import { useUsersStore, useColumnsStore, useFiltersStore } from "@/stores";
 
 // Определяем хранилища
