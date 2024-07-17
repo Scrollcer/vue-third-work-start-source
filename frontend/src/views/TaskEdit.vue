@@ -12,7 +12,8 @@ const tasksStore = useTasksStore();
 const route = useRoute();
 const router = useRouter();
 
-const task = tasksStore.tasks.find((task) => +task.id === +route.params.id);
+// Находим задачу в массиве задач по id из строки URL
+const task = tasksStore.getTaskById(route.params.id);
 
 if (task) {
   const taskDate = task.dueDate;

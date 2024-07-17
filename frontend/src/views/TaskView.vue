@@ -6,7 +6,7 @@
     @click.self="closeDialog"
     @keydown.esc="closeDialog"
   >
-    <section class="task-card__wrapper">
+    <section v-if="task" class="task-card__wrapper">
       <!--Закрытие задачи-->
       <button class="task-card__close" type="button" @click="closeDialog" />
       <!--Шапка задачи-->
@@ -14,10 +14,11 @@
         <div class="task-card__row">
           <!--Наименование задачи-->
           <h1 class="task-card__name task-card__name--min">
-            {{ task ? task.title : "" }}
+            {{ task.title }}
           </h1>
           <!--Кнопка редактирования задачи-->
           <a
+            v-if="authStore.getUserAttribute('isAdmin')"
             class="task-card__edit"
             @click="
               router.push({
@@ -42,7 +43,10 @@
             Участник:
             <div class="task-card__participant">
               <button type="button" class="task-card__user">
-                <img :src="getImage(task.user.avatar)" :alt="task.user.name" />
+                <img
+                  :src="getPublicImage(task.user.avatar)"
+                  :alt="task.user.name"
+                />
                 {{ task.user.name }}
               </button>
             </div>
@@ -58,13 +62,13 @@
       </div>
       <!--Описание задачи-->
       <div class="task-card__block">
-        <div v-if="task && task.description" class="task-card__description">
+        <div v-if="task.description" class="task-card__description">
           <h4 class="task-card__title">Описание</h4>
           <p>{{ task.description }}</p>
         </div>
       </div>
       <!--Дополнительная ссылка-->
-      <div v-if="task && task.url" class="task-card__block task-card__links">
+      <div v-if="task.url" class="task-card__block task-card__links">
         <h4 class="task-card__title">Ссылки</h4>
 
         <div class="task-card__links-item">
@@ -73,70 +77,65 @@
           </a>
         </div>
       </div>
-      <!--Чек-лист-->
-      <div
-        v-if="task && task.ticks && task.ticks.length"
-        class="task-card__block"
-      >
+      <!--Чеклист-->
+      <div v-if="task.ticks && task.ticks.length" class="task-card__block">
         <task-card-view-ticks-list :ticks="task.ticks" disabled />
       </div>
       <!--Метки-->
-      <div
-        v-if="task && task.tags && task.tags.length"
-        class="task-card__block"
-      >
+      <div v-if="task.tags && task.tags.length" class="task-card__block">
         <h4 class="task-card__title">Метки</h4>
         <task-card-tags :tags="task.tags" />
       </div>
       <!--Комментарии-->
       <task-card-view-comments
-        v-if="task"
+        v-if="authStore.isAuthenticated"
         class="task-card__comments"
-        :comments="task.comments || []"
         :task-id="task.id"
-        @create-new-comment="addCommentToList"
       />
     </section>
   </div>
 </template>
 
 <script setup>
+import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ref, onMounted, computed } from "vue";
-import { useTaskCardDate } from "@/common/composables";
-import { getReadableDate, getImage } from "@/common/helpers";
+import { getReadableDate, getPublicImage } from "../common/helpers";
+import { useTaskCardDate } from "../common/composables";
 import TaskCardViewTicksList from "../modules/tasks/components/TaskCardViewTicksList.vue";
 import TaskCardTags from "../modules/tasks/components/TaskCardTags.vue";
 import TaskCardViewComments from "../modules/tasks/components/TaskCardViewComments.vue";
-import { useTasksStore } from "@/stores";
+import { useTasksStore, useAuthStore } from "@/stores";
 
 const tasksStore = useTasksStore();
+const authStore = useAuthStore();
+
 const router = useRouter();
 const route = useRoute();
+
 const dialog = ref(null);
+
+onMounted(() => {
+  // Фокусируем на диалоговом окне чтобы сработала клавиша esc без дополнительного клика на окне
+  dialog.value.focus();
+});
+
+// Найдем задачу по id из массива задач
+const task = computed(() => {
+  return tasksStore.getTaskById(route.params.id);
+});
+
+if (!task.value) {
+  // Вернуть пользователя на главную страницу если задача не найдена
+  router.push("/");
+}
 
 const dueDate = computed(() => {
   return getReadableDate(task.value.dueDate || "");
 });
+
 const closeDialog = function () {
   router.push("/");
 };
-
-const task = computed(() => {
-  return tasksStore.tasks.find((task) => task.id == route.params.id);
-});
-
-const addCommentToList = function (comment) {
-  if (!task.value.comments) {
-    task.value.comments = [];
-  }
-  task.value.comments.push(comment);
-};
-
-onMounted(() => {
-  // Фокусируемся на диалоговом окне, чтобы сработала клавиша Esc без дополнительного клика на окне
-  dialog.value.focus();
-});
 </script>
 
 <style lang="scss" scoped>
@@ -159,7 +158,7 @@ onMounted(() => {
   outline: none;
   background: $gray-900;
 
-  & __close {
+  &__close {
     position: absolute;
     top: 16px;
     right: 16px;
@@ -172,8 +171,8 @@ onMounted(() => {
     border: none;
     background-color: transparent;
 
-    & ::after,
-    & ::before {
+    &::after,
+    &::before {
       position: absolute;
       top: 50%;
       left: 50%;
@@ -187,29 +186,29 @@ onMounted(() => {
       background-color: $blue-gray-300;
     }
 
-    & ::after {
+    &::after {
       transform: translate(-50%, -50%) rotate(45deg);
     }
 
-    & ::before {
+    &::before {
       transform: translate(-50%, -50%) rotate(-45deg);
     }
 
-    & :hover {
-      & ::before,
-      & ::after {
+    &:hover {
+      &::before,
+      &::after {
         background-color: $blue-700;
       }
     }
   }
 
-  & __error-text {
+  &__error-text {
     color: $red-600;
 
     @include r-s10-h12;
   }
 
-  & __wrapper {
+  &__wrapper {
     position: relative;
 
     box-sizing: border-box;
@@ -222,11 +221,11 @@ onMounted(() => {
     box-shadow: 0 4px 8px $shadow-500;
   }
 
-  & __block {
+  &__block {
     margin-bottom: 30px;
   }
 
-  & __name {
+  &__name {
     display: block;
 
     width: 100%;
@@ -241,28 +240,28 @@ onMounted(() => {
 
     @include m-s24-h21;
 
-    & :focus:not(:disabled) {
+    &:focus:not(:disabled) {
       cursor: text;
 
       border-color: $blue-gray-200;
     }
 
-    & --disabled {
+    &--disabled {
       pointer-events: none;
     }
 
-    & --min {
+    &--min {
       max-width: 59%;
     }
   }
 
-  & __row {
+  &__row {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
   }
 
-  & __date {
+  &__date {
     margin-top: 5px;
 
     color: $blue-gray-300;
@@ -270,7 +269,7 @@ onMounted(() => {
     @include r-s14-h21;
   }
 
-  & __participant {
+  &__participant {
     display: inline-block;
 
     margin-left: 10px;
@@ -278,8 +277,8 @@ onMounted(() => {
     vertical-align: baseline;
   }
 
-  & __user,
-  & __date-link {
+  &__user,
+  &__date-link {
     position: relative;
 
     display: flex;
@@ -305,13 +304,13 @@ onMounted(() => {
     }
   }
 
-  & __user {
-    & :active {
+  &__user {
+    &:active {
       color: $blue-gray-300;
     }
   }
 
-  & __date-link {
+  &__date-link {
     text-decoration: none;
 
     color: $gray-900;
@@ -319,7 +318,7 @@ onMounted(() => {
     @include r-s16-h21;
   }
 
-  & __params {
+  &__params {
     position: relative;
 
     color: $gray-900;
@@ -351,7 +350,7 @@ onMounted(() => {
 
     @include r-s16-h21;
 
-    & :after {
+    &:after {
       position: absolute;
       top: 2px;
       right: 0;
@@ -367,16 +366,16 @@ onMounted(() => {
       background-size: cover;
     }
 
-    & :hover {
+    &:hover {
       text-decoration: none;
 
-      & :after {
+      &:after {
         opacity: 1;
       }
     }
   }
 
-  & __links-item {
+  &__links-item {
     margin-top: 16px;
 
     color: $blue-gray-300;
@@ -413,7 +412,7 @@ onMounted(() => {
     @include m-s18-h21;
   }
 
-  & __description {
+  &__description {
     p {
       margin-top: 16px;
 
@@ -442,12 +441,12 @@ onMounted(() => {
     }
   }
 
-  & __files {
+  &__files {
     margin-top: 30px;
     margin-bottom: 20px;
   }
 
-  & __list {
+  &__list {
     @include clear-list;
 
     margin-top: 15px;
@@ -460,7 +459,7 @@ onMounted(() => {
 
     margin-top: 10px;
 
-    & :hover {
+    &:hover {
       .task-card__icons {
         opacity: 1;
       }
@@ -473,7 +472,7 @@ onMounted(() => {
     opacity: 0;
   }
 
-  & __buttons {
+  &__buttons {
     display: flex;
     justify-content: space-between;
 
@@ -481,22 +480,22 @@ onMounted(() => {
     margin-top: 50px;
   }
 
-  & __comments {
+  &__comments {
     margin-top: 20px;
   }
 
-  & __status {
+  &__status {
     display: flex;
     align-items: center;
 
     margin-bottom: 15px;
   }
 
-  & __meta {
+  &__meta {
     margin-left: 5px;
   }
 
-  & __edit {
+  &__edit {
     display: block;
 
     margin: 0;
@@ -514,11 +513,11 @@ onMounted(() => {
 
     @include r-s14-h16;
 
-    & :hover {
+    &:hover {
       opacity: 1;
     }
 
-    & --red {
+    &--red {
       align-self: center;
 
       margin-top: 0;

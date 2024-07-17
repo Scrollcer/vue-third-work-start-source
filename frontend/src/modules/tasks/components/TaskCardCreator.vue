@@ -1,8 +1,8 @@
 <template>
   <div
+    ref="dialog"
     class="task-card"
     tabindex="0"
-    ref="dialog"
     @click.self="closeDialog"
     @keydown.esc="closeDialog"
   >
@@ -111,16 +111,16 @@
         <!--        Список подзадач-->
         <task-card-view-ticks-list
           :ticks="task.ticks"
-          @createTick="createTick"
-          @updateTick="updateTick"
-          @removeTick="removeTick"
+          @create-tick="createTick"
+          @update-tick="updateTick"
+          @remove-tick="removeTick"
         />
       </div>
 
       <!--      Блок тегов-->
       <div class="task-card__block">
         <!--        Компонент создания тегов-->
-        <task-card-creator-tags :tags="task.tags" @setTags="setTags" />
+        <task-card-creator-tags :tags="task.tags" @set-tags="setTags" />
       </div>
 
       <!--      Блок сохранения и отмены изменений-->
@@ -156,9 +156,11 @@ import TasksCardCreatorUserSelector from "./TaskCardCreatorUserSelector.vue";
 import TasksCardCreatorDueDateSelector from "./TaskCardCreatorDueDateSelector.vue";
 import TaskCardViewTicksList from "./TaskCardViewTicksList.vue";
 import TaskCardCreatorTags from "./TaskCardCreatorTags.vue";
-import { useTasksStore } from "@/stores/tasks";
+import { useTasksStore, useTicksStore } from "@/stores";
 
+// Определяем хранилище задач
 const tasksStore = useTasksStore();
+const ticksStore = useTicksStore();
 
 const router = useRouter();
 
@@ -167,6 +169,18 @@ const dialog = ref(null);
 const statusList = ref(STATUSES.slice(0, 3));
 
 const isFormValid = ref(true);
+
+async function submitTicks(taskId, ticks) {
+  const promises = ticks.map((tick) => {
+    if (!tick.text) {
+      return;
+    }
+    delete tick.uuid;
+    tick.taskId = taskId;
+    return tick.id ? ticksStore.updateTick(tick) : ticksStore.addTick(tick);
+  });
+  await Promise.all(promises);
+}
 
 onMounted(() => {
   // Фокусируем на диалоговом окне, чтобы сработала клавиша Esc без дополнительного клика на окне
@@ -182,26 +196,40 @@ watch(
   { deep: true },
 );
 
-function submit() {
+async function submit() {
   // Валидируем задачу
   if (!validateFields(task.value, validations.value)) {
     isFormValid.value = false;
     return;
   }
+  let taskId = task.value.id;
   if (props.taskToEdit) {
     // Редактируемая задача
-    tasksStore.editTask(task.value);
+    await tasksStore.editTask(task.value);
   } else {
     // Новая задача
-    tasksStore.addTask(task.value);
+    const newTask = await tasksStore.addTask(task.value);
+    taskId = newTask.id;
   }
+  // Создать или обновить подзадачи
+  await submitTicks(taskId, task.value.ticks);
   // Переход на главную страницу
-  router.push("/");
+  await router.push("/");
 }
 
 function deleteTask() {
   tasksStore.deleteTask(task.value.id);
   router.push("/");
+}
+
+function removeTick({ uuid, id }) {
+  if (uuid) {
+    task.value.ticks = task.value.ticks.filter((tick) => tick.uuid !== uuid);
+  }
+  if (id) {
+    task.value.ticks = task.value.ticks.filter((tick) => tick.id !== id);
+    ticksStore.deleteTick(id);
+  }
 }
 
 function closeDialog() {
@@ -279,15 +307,6 @@ function updateTick(tick) {
   });
   if (~index) {
     task.value.ticks.splice(index, 1, tick);
-  }
-}
-
-function removeTick({ uuid, id }) {
-  if (uuid) {
-    task.value.ticks = task.value.ticks.filter((tick) => tick.uuid !== uuid);
-  }
-  if (id) {
-    task.value.ticks = task.value.ticks.filter((tick) => tick.id !== id);
   }
 }
 
